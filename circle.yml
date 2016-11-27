@@ -1,0 +1,30 @@
+dependencies:
+  pre:
+    - wget -q https://dl.bintray.com/sbt/debian/sbt-0.13.11.deb
+    - sudo dpkg -i sbt-0.13.11.deb
+    - pip install awscli
+  cache_directories:
+    - "~/.ivy2"
+    - "~/.sbt"
+  override:
+    - sbt clean test:compile
+machine:
+  java:
+    version: oraclejdk8
+  services:
+    - docker
+test:
+  override:
+    - sbt test functional:test
+  post:
+    - mkdir -p $CIRCLE_TEST_REPORTS/junit/
+    - find . -type f -regex ".*/target/test-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
+deployment:
+  dev:
+    branch: master
+    commands:
+      - ./project/deploy.sh
+  features:
+    branch: /.*/
+    commands:
+      - ./project/push_ecr_image.sh
