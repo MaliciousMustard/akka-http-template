@@ -18,19 +18,24 @@ object WebServer extends App {
     injector.instance[ActorSystem],
     injector.instance[ActorMaterializer],
     injector.instance[ExecutionContext]
-    )
+  )
 
   val (config, router) = (
     injector.instance[Config],
     injector.instance[Router]
-    )
+  )
+
+  val (interface, port) = (
+    config.getString("http.interface"),
+    config.getInt("http.port")
+  )
 
   val bindingFuture = Http().bindAndHandle(
     logRequests(router.route),
-    config.getString("http.interface"),
-    config.getInt("http.port")
-    )
+    interface,
+    port
+  )
 
-  println("Startup complete.")
+  println(s"Startup complete. Running on $interface:$port")
 }
 
